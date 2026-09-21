@@ -8,7 +8,7 @@
 # ./make.sh platform [compiler]
 
 if [ $# -lt 1 ]; then
-  echo "need a parameter (sdl, pokitto, gb, emscripten, ...)"
+  echo "need a parameter (sdl, pokitto, gb, emscripten, ps2, ...)"
   exit 0
 fi
 
@@ -36,7 +36,7 @@ if [ $1 = "sdl" ]; then
   # - SDL2 (dev) package
 
   SDL_FLAGS=`sdl2-config --cflags --libs`
-  COMMAND="${COMPILER} ${C_FLAGS} main_sdl.c -I/usr/local/include ${SDL_FLAGS}"
+  COMMAND="${COMPILER} ${C_FLAGS} main_sdl.c -I/usr/local/include${SDL_FLAGS}"
 
   echo ${COMMAND}
 
@@ -45,7 +45,7 @@ elif [ $1 = "ncurses" ]; then
   # ncurses build, requires:
   # - libncurses-dev
 
-  COMMAND="${COMPILER} ${C_FLAGS} -lncurses main_ncurses.c"
+  COMMAND="${COMPILER}${C_FLAGS} -lncurses main_ncurses.c"
 
   echo ${COMMAND}
 
@@ -56,7 +56,7 @@ elif [ $1 = "saf" ]; then
   # - SDL2 (dev) package
 
   SDL_FLAGS=`sdl2-config --cflags --libs --static-libs`
-  COMMAND="${COMPILER} ${C_FLAGS} main_saf.c -I/usr/local/include ${SDL_FLAGS}"
+  COMMAND="${COMPILER} ${C_FLAGS} main_saf.c -I/usr/local/include${SDL_FLAGS}"
 
   echo ${COMMAND}
 
@@ -65,7 +65,7 @@ elif [ $1 = "terminal" ]; then
   # PC terminal build, requires:
   # - g++
 
-  COMMAND="${COMPILER} ${C_FLAGS} main_terminal.c"
+  COMMAND="${COMPILER}${C_FLAGS} main_terminal.c"
 
   echo ${COMMAND}
 
@@ -74,7 +74,7 @@ elif [ $1 = "csfml" ]; then
   # csfml build, requires:
   # - csfml
 
-  COMMAND="${COMPILER} ${C_FLAGS} main_csfml.c -lcsfml-graphics -lcsfml-window -lcsfml-system -lcsfml-audio"
+  COMMAND="${COMPILER}${C_FLAGS} main_csfml.c -lcsfml-graphics -lcsfml-window -lcsfml-system -lcsfml-audio"
 
   echo ${COMMAND}
 
@@ -83,7 +83,7 @@ elif [ $1 = "test" ]; then
   # test build, requires:
   # - g++
 
-  COMMAND="${COMPILER} ${C_FLAGS} main_test.c"
+  COMMAND="${COMPILER}${C_FLAGS} main_test.c"
 
   echo ${COMMAND}
 
@@ -112,6 +112,19 @@ elif [ $1 = "libretro" ]; then
   echo ${COMMAND}
 
   ${COMMAND}
+elif [ $1 = "ps2" ]; then
+  # PlayStation 2 libretro core build using PS2SDK toolchain
+
+  CC="mips64r5900el-ps2-elf-gcc"
+  AR="mips64r5900el-ps2-elf-ar"
+  
+  PS2_CFLAGS="-O3 -G0 -std=c99 -Wall -Wextra -fPIC -I. -I$PS2SDK/ee/include -I$PS2SDK/common/include -DGEKKO -D_EE"
+
+  echo "Compiling Anarch for PlayStation 2..."
+  
+  ${CC} ${PS2_CFLAGS} -c main_libretro.c -o main_libretro.o \vert{}\vert{} { exit 1; }${AR} rcs anarch_libretro_ps2.a main_libretro.o || { exit 1; }
+
+  echo "Build complete: anarch_libretro_ps2.a"
 else
   echo "unknown parameter: $1"
 fi
